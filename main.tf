@@ -1,9 +1,32 @@
+terraform {
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 5.0"
+    }
+    random = {
+      source  = "hashicorp/random"
+      version = "~> 3.0"
+    }
+  }
+ 
+  required_version = ">= 1.3.0"
+}
+ 
 provider "aws" {
   region = var.aws_region
 }
  
+resource "random_id" "bucket_suffix" {
+  byte_length = 4
+}
+ 
 resource "aws_s3_bucket" "static_site_bucket" {
-  bucket = var.bucket_name
+  bucket = "static-site-${random_id.bucket_suffix.hex}"
+ 
+  tags = {
+    Name = "StaticSiteBucket"
+  }
 }
  
 resource "aws_s3_bucket_website_configuration" "website_config" {
@@ -42,7 +65,7 @@ resource "aws_s3_object" "website_files" {
 }
  
 resource "aws_cloudfront_origin_access_control" "s3_oac" {
-  name                              = "s3-oac-${var.bucket_name}" # or append a timestamp, etc.
+  name                              = "s3-oac-${aws_s3_bucket.static_site_bucket.bucket}"
   description                       = "Access control for S3"
   origin_access_control_origin_type = "s3"
   signing_behavior                  = "always"
@@ -114,4 +137,6 @@ output "cloudfront_domain" {
   value = aws_cloudfront_distribution.cdn.domain_name
 }
  
- 
+output "bucket_name" {
+  value = aws_s3_bucket.static_site_bucket.bucket
+}
