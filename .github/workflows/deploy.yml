@@ -36,8 +36,9 @@ jobs:
  
       # Run Terraform Plan (to show the execution plan)
       - name: Terraform Plan
-        run: terraform plan
+        run: terraform plan -var="bucket_name=your-unique-bucket-name"
  
       # Apply Terraform changes (optional, remove if you want manual approval)
       - name: Terraform Apply
-        run: terraform apply -auto-approve
+        run: terraform apply -auto-approve -var="bucket_name=your-unique-bucket-name"
+
